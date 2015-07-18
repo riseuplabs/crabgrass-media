@@ -1,6 +1,10 @@
-require 'media/transmogrifier'
 require 'media/mime_type'
 require 'media/temp_file'
+require 'media/transmogrifier'
+require 'media/transmogrifiers/graphicsmagick'
+require 'media/transmogrifiers/inkscape'
+require 'media/transmogrifiers/libremagick'
+require 'media/transmogrifiers/libreoffice'
 
 module Media
 

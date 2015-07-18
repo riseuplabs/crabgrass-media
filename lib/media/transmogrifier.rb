@@ -34,47 +34,45 @@ module Media
     #
     def initialize(options=nil)
       self.name = self.class.to_s
-      if options
+      # we keep an instance in the transmogrifier list.
+      # They only need to have the name set.
+      return if options.nil?
 
-        options = options.dup
-        self.input       = options.delete(:input)
-        self.input_file  = options.delete(:input_file)
-        self.input_type  = options.delete(:input_type)
-        self.output_file = options.delete(:output_file)
-        self.output_type = options.delete(:output_type)
-        self.options = options
+      options = options.dup
+      self.input       = options.delete(:input)
+      self.input_file  = options.delete(:input_file)
+      self.input_type  = options.delete(:input_type)
+      self.output_file = options.delete(:output_file)
+      self.output_type = options.delete(:output_type)
+      self.options = options
 
 
-        if input and input_type.nil?
-          raise ArgumentError.new('input_type required if input specified')
-        elsif input and input_file.nil?
-          self.input_file = Media::TempFile.new(input, input_type)
-        elsif input and input_file
-          raise ArgumentError.new('cannot have both input and input_type')
-        elsif input_file and input_type.nil?
-          self.input_type = Media::MimeType.mime_type_from_extension(input_file)
-        elsif input.nil? and input_file.nil?
-          raise ArgumentError.new('input or input_file is required')
-        end
-
-        if output_file.nil? and output_type.nil?
-          raise ArgumentError.new('output_file or output_type is required')
-        elsif output_file.nil?
-          self.output_file = Media::TempFile.new(nil, output_type)
-        elsif output_type.nil?
-          self.output_type = Media::MimeType.mime_type_from_extension(output_file)
-        end
-
-        set_temporary_outfile
-
-      else
-        #
-        # this is used to register the transmogrifier.
-        # we keep the list as instances instead of classes because rails
-        # behaves better that way.
-        #
-        self.class.add(self)
+      if input and input_type.nil?
+        raise ArgumentError.new('input_type required if input specified')
+      elsif input and input_file.nil?
+        self.input_file = Media::TempFile.new(input, input_type)
+      elsif input and input_file
+        raise ArgumentError.new('cannot have both input and input_type')
+      elsif input_file and input_type.nil?
+        self.input_type = Media::MimeType.mime_type_from_extension(input_file)
+      elsif input.nil? and input_file.nil?
+        raise ArgumentError.new('input or input_file is required')
       end
+
+      if output_file.nil? and output_type.nil?
+        raise ArgumentError.new('output_file or output_type is required')
+      elsif output_file.nil?
+        self.output_file = Media::TempFile.new(nil, output_type)
+      elsif output_type.nil?
+        self.output_type = Media::MimeType.mime_type_from_extension(output_file)
+      end
+
+      set_temporary_outfile
+
+    end
+
+    def self.inherited(base)
+      add(base.new)
     end
 
     ##
@@ -85,11 +83,11 @@ module Media
 
     # maps mine type to an array of transmogrifiers that
     # take that type as an imput
-    def self.input_map; @@input_map ||= {}; end
+    def self.input_map; @@input_map ||= Hash.new([]); end
 
     # maps mine type to an array of transmogrifiers that
     # produce that type as an output
-    def self.output_map; @@output_map ||= {}; end
+    def self.output_map; @@output_map ||= Hash.new([]); end
 
     def self.add(trans)
       self.list[trans.name] ||= trans
@@ -100,40 +98,25 @@ module Media
     # into output_type
     #
     def self.find_class(input_type, output_type)
-      input_transmogs = self.input_map[input_type] || []
-      output_transmogs = self.output_map[output_type] || []
-      # take first of the intersection, maybe add weighting in the future.
-      transmog = (input_transmogs & output_transmogs).select {|tm| tm.available?}.first
+      transmog = list.values.
+        select{|tm| tm.converts_from?(input_type)}.
+        select{|tm| tm.converts_to?(output_type)}.
+        select{|tm| tm.available?}.
+        first
       return transmog.class if transmog
       error 'could not find a transmogrifier for "%s" -> "%s"' %
         [input_type, output_type]
       return nil
     end
 
-    #
-    # this needs to be called once before anything will work.
-    #
-    def self.prepare
-      # remove unavailable
-      @@list.dup.each do |name, trans|
-        if !trans.available?
-          warn('skipping transmogrifier %s, requirements not met' % trans.name)
-          @@list.delete(name)
-        end
-      end
-
-      # set up mime type input and output maps
-      @@list.each do |name, trans|
-        for input_type in trans.input_types
-          self.input_map[input_type] ||= []
-          self.input_map[input_type] << trans
-        end
-        for output_type in trans.output_types
-          self.output_map[output_type] ||= []
-          self.output_map[output_type] << trans
-        end
-      end
+    def converts_from?(input_type)
+      input_types.include? input_type
     end
+
+    def converts_to?(output_type)
+      output_types.include? output_type
+    end
+
 
     #
     #def self.simple_type(mime_type)
