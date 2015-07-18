@@ -9,6 +9,9 @@ require 'fileutils'
 module Media
   class Transmogrifier
 
+    # singleton logger, only set via class, access via class and instance
+    mattr_accessor :logger, instance_writer: false
+
     attr_accessor :name
 
     attr_accessor :input
@@ -22,9 +25,6 @@ module Media
     attr_accessor :options
 
     attr_accessor :command_output # output of last command run
-
-    @@verbose = true
-    @@suppress_errors = false
 
     #
     # takes a has of options, some of which are required:
@@ -105,7 +105,7 @@ module Media
       # take first of the intersection, maybe add weighting in the future.
       transmog = (input_transmogs & output_transmogs).select {|tm| tm.available?}.first
       return transmog.class if transmog
-      log_error 'could not find a transmogrifier for "%s" -> "%s"' %
+      error 'could not find a transmogrifier for "%s" -> "%s"' %
         [input_type, output_type]
       return nil
     end
@@ -117,7 +117,7 @@ module Media
       # remove unavailable
       @@list.dup.each do |name, trans|
         if !trans.available?
-          info('skipping transmogrifier %s, requirements not met' % trans.name, 0)
+          warn('skipping transmogrifier %s, requirements not met' % trans.name)
           @@list.delete(name)
         end
       end
@@ -135,26 +135,6 @@ module Media
       end
     end
 
-    #
-    # set log verbosity
-    #
-
-    def self.verbose=(bool)
-      @@verbose = bool
-    end
-    def self.verbose?
-      @@verbose
-    end
-
-    def self.suppress_errors=(bool)
-      @@suppress_errors = bool
-    end
-    def self.suppress_errors?
-      @@suppress_errors
-    end
-
-    #
-    # removes leading x- from mime-types
     #
     #def self.simple_type(mime_type)
     #  mime_type.gsub(/\/x\-/,'/') if mime_type
@@ -196,13 +176,13 @@ module Media
       end
       if status == :success
         log_command cmdstr
-        log_command "took #{took} seconds."
+        debug "took #{took} seconds."
       else
-        log_error cmdstr
+        error cmdstr
         msg = 'exited with "%s"' % $?.exitstatus
-        log_error msg
+        error msg
         if command_output
-          log_error command_output
+          error command_output
         end
         yield(msg) if block_given?
       end
@@ -210,7 +190,7 @@ module Media
       # restore the original output_file name
       unless restore_temporary_outfile
         msg = 'could not restore temporary outfile'
-        log_error msg
+        error msg
         yield(msg) if block_given?
         status = :failure
       end
@@ -233,35 +213,32 @@ module Media
 
     protected
 
-    def self.log(*args)
-      if defined?(ActiveRecord)
-        ActiveRecord::Base.logger.info "Transmogrifier --- " + args.join(' ')
-      end
-      info args.join(' '), 2
+    def self.debug(*args)
+      logger.debug "Transmogrifier --- " + args.join(' ') if logger
     end
 
-    def self.log_error(*args)
-      unless suppress_errors?
-        msg = ['ERROR:'] + args
-        if defined?(ActiveRecord)
-          ActiveRecord::Base.logger.info "Transmogrifier --- " + msg.join(' ')
-        end
-        info msg.join(' '), 0
-      end
+    def self.info(*args)
+      logger.info "Transmogrifier --- " + args.join(' ') if logger
     end
 
-    def log_error(*args)
-      self.class.log_error(*args)
+    def self.warn(*args)
+      logger.error "Transmogrifier --- " + args.join(' ') if logger
     end
 
-    def log(*args)
-      self.class.log(*args)
+    def self.error(*args)
+      logger.error "Transmogrifier --- " + args.join(' ') if logger
+    end
+
+    def error(*args)
+      self.class.error(*args)
+    end
+
+    def info(*args)
+      self.class.info(*args)
     end
 
     def log_command(*args)
-      if self.class.verbose?
-        self.class.log("\tCOMMAND:", *args)
-      end
+      self.class.debug("\tCOMMAND:", *args)
     end
 
     #
