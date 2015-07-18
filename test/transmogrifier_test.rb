@@ -23,7 +23,7 @@ class TransmogrifierTest < ActiveSupport::TestCase
   end
 
   def test_graphicsmagick_transmog
-    input = test_file('lyra.png')
+    input = file('lyra.png')
     transmog = Media.transmogrifier(input_file: input, output_type: 'image/jpg', size: '100x100!')
     assert_not_nil transmog
     status = transmog.run do |progress|
@@ -37,7 +37,7 @@ class TransmogrifierTest < ActiveSupport::TestCase
   end
 
   def test_with_output_file
-    input = test_file('lyra.png')
+    input = file('lyra.png')
     Media::TempFile.open(nil,'image/jpg') do |dest_file|
       filename = dest_file.to_s
       transmog = Media.transmogrifier(input_file: input, output_file: dest_file)
@@ -50,7 +50,7 @@ class TransmogrifierTest < ActiveSupport::TestCase
   end
 
   def test_libreoffice_transmog
-    input = test_file('msword.doc')
+    input = file('msword.doc')
     transmog = Media.transmogrifier(input_file: input, output_type: 'application/pdf')
     assert_not_nil transmog
     status = transmog.run do |progress|
@@ -63,7 +63,7 @@ class TransmogrifierTest < ActiveSupport::TestCase
   end
 
   def test_libremagick_transmog
-    input = test_file('msword.doc')
+    input = file('msword.doc')
     transmog = Media.transmogrifier(input_file: input, output_type: 'image/jpg')
     assert_not_nil transmog
     status = transmog.run do |progress|
@@ -76,7 +76,7 @@ class TransmogrifierTest < ActiveSupport::TestCase
   end
 
   def test_inkscape_transmog
-    input = test_file('anarchism.svg')
+    input = file('anarchism.svg')
     transmog = Media.transmogrifier(input_file: input, output_type: 'image/jpg')
     assert_not_nil transmog
     status = transmog.run do |progress|
