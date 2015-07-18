@@ -15,19 +15,11 @@ require 'pathname'
 # when the Tempfile gets garbage collected.
 #
 
-unless defined?(MEDIA_TMP_PATH)
-  if defined?(Rails)
-    MEDIA_TMP_PATH = File.join(Rails.root, 'tmp', 'media')
-  else
-    MEDIA_TMP_PATH = File.join('', 'tmp', 'media')
-  end
-end
-
 module Media
   class TempFile
 
     def self.tempfile_path
-      MEDIA_TMP_PATH
+      ::Media::TMP_PATH
     end
 
     ##
@@ -158,6 +150,3 @@ module Media
 
   end
 end
-
-FileUtils.mkdir_p(Media::TempFile.tempfile_path) unless File.exist?(Media::TempFile.tempfile_path)
-
