@@ -88,4 +88,9 @@ class TransmogrifierTest < ActiveSupport::TestCase
     assert file_info_matches?(transmog.output_file, /JPEG/), "output should be a pdf: #{file_info(transmog.output_file)}"
   end
 
+  protected
+
+  def debug_progress(msg)
+    puts "\t\tPROGRESS: %s" % msg
+  end
 end
