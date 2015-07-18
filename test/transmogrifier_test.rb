@@ -32,8 +32,10 @@ class TransmogrifierTest < ActiveSupport::TestCase
     assert_equal :success, status
     assert File.exist?(transmog.output_file.to_s)
 
-    assert file_info_matches?(transmog.output_file, /JPEG/), "output should be a jpg: #{file_info(transmog.output_file)}"
-    assert_equal ['100','100'], Media.dimensions(transmog.output_file), "output should be resized: #{file_info(transmog.output_file)}"
+    assert file_info_matches?(transmog.output_file, /JPEG/),
+      "output should be a jpg: #{file_info(transmog.output_file)}"
+    assert_equal ['100','100'], Media.dimensions(transmog.output_file),
+      "output should be resized: #{file_info(transmog.output_file)}"
   end
 
   def test_with_output_file

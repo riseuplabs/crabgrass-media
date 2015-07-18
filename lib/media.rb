@@ -49,14 +49,14 @@ module Media
   #
 
   def self.has_dimensions?(mime_type)
-    if Transmogrifier.list["GraphicsMagickTransmogrifier"]
-      Transmogrifier.list["GraphicsMagickTransmogrifier"].input_types.include? mime_type
+    if Transmogrifier.list["Media::GraphicsMagickTransmogrifier"]
+      Transmogrifier.list["Media::GraphicsMagickTransmogrifier"].input_types.include? mime_type
     end
   end
 
   def self.dimensions(filepath)
-    if Transmogrifier.list["GraphicsMagickTransmogrifier"]
-      Transmogrifier.list["GraphicsMagickTransmogrifier"].dimensions filepath
+    if Transmogrifier.list["Media::GraphicsMagickTransmogrifier"]
+      Transmogrifier.list["Media::GraphicsMagickTransmogrifier"].dimensions filepath
     end
   end
 
