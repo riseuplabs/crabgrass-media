@@ -1,7 +1,7 @@
 require_relative 'test_helper'
 require_relative 'sleepy_transmogrifier'
 
-class TransmogrifierTest < Test::Unit::TestCase
+class TransmogrifierTest < ActiveSupport::TestCase
 
   def test_run_sleepy_transmog
     progress_strings = [
