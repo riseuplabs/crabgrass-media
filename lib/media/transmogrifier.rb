@@ -229,12 +229,16 @@ module Media
       logger.error "Transmogrifier --- " + args.join(' ') if logger
     end
 
-    def error(*args)
-      self.class.error(*args)
-    end
-
     def info(*args)
       self.class.info(*args)
+    end
+
+    def debug(*args)
+      self.class.debug(*args)
+    end
+
+    def error(*args)
+      self.class.error(*args)
     end
 
     def log_command(*args)
