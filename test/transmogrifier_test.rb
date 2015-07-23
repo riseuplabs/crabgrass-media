@@ -64,6 +64,21 @@ class TransmogrifierTest < ActiveSupport::TestCase
     assert file_info_matches?(transmog.output_file, /PDF/), "output should be a pdf: #{file_info(transmog.output_file)}"
   end
 
+  def test_doc_to_jpg_twostep_transmog
+    input = file('msword.doc')
+    transmog = Media.transmogrifier(input_file: input, output_type: 'application/pdf')
+    transmog.run
+
+    transmog = Media.transmogrifier(input_file: transmog.output_file, output_type: 'image/jpg')
+    status = transmog.run do |progress|
+      debug_progress progress
+    end
+    assert_equal :success, status
+    assert File.exist?(transmog.output_file.to_s)
+
+    assert file_info_matches?(transmog.output_file, /JPEG/), "output should be a jpg: #{file_info(transmog.output_file)}"
+  end
+
   def test_libremagick_transmog
     input = file('msword.doc')
     transmog = Media.transmogrifier(input_file: input, output_type: 'image/jpg')
@@ -74,7 +89,7 @@ class TransmogrifierTest < ActiveSupport::TestCase
     assert_equal :success, status
     assert File.exist?(transmog.output_file.to_s)
 
-    assert file_info_matches?(transmog.output_file, /JPEG/), "output should be a pdf: #{file_info(transmog.output_file)}"
+    assert file_info_matches?(transmog.output_file, /JPEG/), "output should be a jpg: #{file_info(transmog.output_file)}"
   end
 
   def test_inkscape_transmog
