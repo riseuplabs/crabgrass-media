@@ -1,19 +1,20 @@
- language: ruby
- # only install ci and assets gems:
- bundler_args: --without production:development:test
- rvm:
-   - 1.9.3
-   - 2.1.5
- matrix:
-   fast_finish: true
- addons:
-   apt:
-     packages:
-       - graphicsmagick
-       - libreoffice-writer
-       - inkscape
- before_install:
-   - bundle --version
-   - libreoffice --version
- notifications:
-   email: false
+language: ruby
+sudo: :required
+rvm:
+  - 1.9.3
+  - 2.1.5
+matrix:
+  fast_finish: true
+addons:
+  apt:
+    packages:
+      - graphicsmagick
+      - inkscape
+before_install:
+  - sudo apt-get install libreoffice-writer
+  - bundle --version
+  - libreoffice --version
+notifications:
+  email: false
+after_script:
+  - "cat log/*.log" # printing all logs to investigate issues on CI
