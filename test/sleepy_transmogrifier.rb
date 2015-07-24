@@ -1,4 +1,4 @@
-
+require 'media/transmogrifier'
 
 class SleepyTransmogrifier < Media::Transmogrifier
 

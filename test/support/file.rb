@@ -18,4 +18,4 @@ module Support
   end
 end
 
-ActiveSupport::TestCase.send :include, Support::File
+Minitest::Test.send :include, Support::File

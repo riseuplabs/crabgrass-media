@@ -5,12 +5,23 @@
 #
 
 require 'fileutils'
+require 'active_support/core_ext/module/delegation.rb'
+require 'active_support/core_ext/module/attribute_accessors.rb'
+require 'logger'
 
 module Media
   class Transmogrifier
 
     # singleton logger, only set via class, access via class and instance
-    mattr_accessor :logger, instance_writer: false
+    mattr_accessor :logger, instance_writer: false do
+      Logger.new(STDERR)
+    end
+
+    mattr_accessor :verbose, instance_writer: false
+    mattr_accessor :suppress_errors, instance_writer: false
+
+    delegate :debug, :info, :warning, :error, to: :logger
+
 
     attr_accessor :name
 
@@ -47,12 +58,13 @@ module Media
       self.options = options
 
 
+
       if input and input_type.nil?
         raise ArgumentError.new('input_type required if input specified')
       elsif input and input_file.nil?
         self.input_file = Media::TempFile.new(input, input_type)
       elsif input and input_file
-        raise ArgumentError.new('cannot have both input and input_type')
+        raise ArgumentError.new('cannot have both input and input_file')
       elsif input_file and input_type.nil?
         self.input_type = Media::MimeType.mime_type_from_extension(input_file)
       elsif input.nil? and input_file.nil?
@@ -66,6 +78,10 @@ module Media
       elsif output_type.nil?
         self.output_type = Media::MimeType.mime_type_from_extension(output_file)
       end
+
+      debug self.class.name + " converting" +
+        " #{input_file } ( #{input_type} ) to" +
+        " #{output_file} ( #{output_type} )"
 
       set_temporary_outfile
 
@@ -160,13 +176,12 @@ module Media
       if status == :success
         log_command cmdstr
         debug "took #{took} seconds."
+        debug command_output
       else
+        msg = ' exited with "%s"' % $?.exitstatus
         error cmdstr
-        msg = 'exited with "%s"' % $?.exitstatus
         error msg
-        if command_output
-          error command_output
-        end
+        error command_output if command_output.present?
         yield(msg) if block_given?
       end
 
@@ -196,36 +211,8 @@ module Media
 
     protected
 
-    def self.debug(*args)
-      logger.debug "Transmogrifier --- " + args.join(' ') if logger
-    end
-
-    def self.info(*args)
-      logger.info "Transmogrifier --- " + args.join(' ') if logger
-    end
-
-    def self.warn(*args)
-      logger.error "Transmogrifier --- " + args.join(' ') if logger
-    end
-
-    def self.error(*args)
-      logger.error "Transmogrifier --- " + args.join(' ') if logger
-    end
-
-    def info(*args)
-      self.class.info(*args)
-    end
-
-    def debug(*args)
-      self.class.debug(*args)
-    end
-
-    def error(*args)
-      self.class.error(*args)
-    end
-
-    def log_command(*args)
-      self.class.debug("\tCOMMAND:", *args)
+    def log_command(command)
+      debug "COMMAND " + command
     end
 
     #
