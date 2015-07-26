@@ -30,5 +30,6 @@ PLATFORMS
 DEPENDENCIES
   byebug
   crabgrass_media!
+  debugger
   minitest
   rake
