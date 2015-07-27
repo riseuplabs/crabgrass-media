@@ -23,6 +23,13 @@ class TransmogrifierTest < Minitest::Test
     assert_equal :success, status
   end
 
+  def test_transmog_not_found
+    input = file('lyra.png')
+    transmog = Media.transmogrifier input_file: input,
+      output_type: 'image/xcf'
+    assert_nil transmog
+  end
+
   def test_graphicsmagick_transmog
     input = file('lyra.png')
     transmog = Media.transmogrifier(input_file: input, output_type: 'image/jpg', size: '100x100!')

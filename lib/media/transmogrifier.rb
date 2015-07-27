@@ -120,7 +120,7 @@ module Media
         select{|tm| tm.available?}.
         first
       return transmog.class if transmog
-      error 'could not find a transmogrifier for "%s" -> "%s"' %
+      logger.error 'could not find a transmogrifier for "%s" -> "%s"' %
         [input_type, output_type]
       return nil
     end
