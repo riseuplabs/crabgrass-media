@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.files = Dir["{config,lib}/**/*", "Rakefile", "README.md"]
   s.test_files = Dir["test/**/*"]
 
-  s.add_dependency 'activesupport', '~> 3.2'
+  s.add_dependency 'activesupport', '>= 3.2'
 
   s.add_development_dependency 'rake', '~> 10.0'
   s.add_development_dependency 'minitest', '~>4.7'

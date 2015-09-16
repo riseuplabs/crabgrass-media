@@ -80,7 +80,7 @@ module Media
               msg << command_output
             end
             msg = msg.join("\n")
-            log_error msg
+            error msg
             yield(msg) if block_given?
             return :failure
           end
@@ -124,14 +124,14 @@ module Media
   #cmd = `which openoffice.org`.chomp unless cmd.present?
 
   #  def try_starting_daemon
-  #    log 'attempting to start libreoffice in daemon mode'
+  #    info 'attempting to start libreoffice in daemon mode'
   #    output = `#{LIBREOFFICE_DAEMON_COMMAND}`
   #    if $? == 0
-  #      log 'libreoffice started'
+  #      info 'libreoffice started'
   #    else
-  #      log_error 'not able to start libreoffice'
-  #      log_error LIBREOFFICE_DAEMON_COMMAND
-  #      log_error output
+  #      error 'not able to start libreoffice'
+  #      error LIBREOFFICE_DAEMON_COMMAND
+  #      error output
   #    end
   #  end
 
