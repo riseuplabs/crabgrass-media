@@ -46,7 +46,7 @@ module Media
       # try converting first page only
       status = convert(input_file.to_s + '[0]', &block)
       # retry with full file if result was empty
-      if File.size(output_file.to_s) == 0
+      if File.exist? (output_file.to_s) && File.size(output_file.to_s) == 0
         # reset filenames to the state before run
         set_temporary_outfile
         status = convert(&block)
